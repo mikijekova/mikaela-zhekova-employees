@@ -1,5 +1,8 @@
 package com.interviewtask;
 
+/**
+ * This class is used to create Employee based on incoming information from a CSV file with those columns.
+ */
 class Employee {
     private int employeeId;
     private int projectId;

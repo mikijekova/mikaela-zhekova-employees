@@ -12,6 +12,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * This class reads file from the path added to Program arguments in Main's configurations
+ * It returns the pair of Employees that have worked the most days together
+ */
 public class Main {
 
     public static void main(String[] args) throws IOException, ParseException {
@@ -36,19 +40,12 @@ public class Main {
                 Date dateFrom2 = format.parse(employees.get(second).getDateFrom());
                 Date dateTo2 = format.parse(employees.get(second).getDateTo());
 
-                //Get latest of both Start Dates
-                if (dateFrom1.compareTo(dateFrom2) > 0) {
-                    start = dateFrom1;
-                } else {
-                    start = dateFrom2;
-                }
-                //Get earliest of both End Dates
-                if (dateTo1.compareTo(dateTo2) < 0) {
-                    end = dateTo1;
-                } else {
-                    end = dateTo2;
-                }
+                //Gets the latest of dateFrom1 and dateFrom2
+                start = getDate(dateFrom1, dateFrom2, dateFrom1.compareTo(dateFrom2) > 0);
+                //Gets the earliest of dateTo1 and dateTo2
+                end = getDate(dateTo1, dateTo2, dateTo1.compareTo(dateTo2) < 0);
 
+                //Check if there is a period between the start and the end date
                 if (start.compareTo(end) < 0) {
                     LocalDate date1 = start.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                     LocalDate date2 = end.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -77,22 +74,39 @@ public class Main {
             Employee employee = new Employee();
             employee.setEmployeeId(Integer.parseInt(data[0]));
             employee.setProjectId(Integer.parseInt(data[1]));
+            setDateFrom(data[2], employee);
+            setDateTo(data[3], employee);
 
-            if (data[2].equals("NULL")) {
-                employee.setDateFrom(LocalDate.now().toString());
-            } else {
-                employee.setDateFrom(data[2]);
-            }
-
-            if (data[3].equals("NULL")) {
-                employee.setDateTo(LocalDate.now().toString());
-            } else {
-                employee.setDateTo(data[3]);
-            }
             employees.add(employee);
         }
 
         bufferedReader.close();
         return employees;
+    }
+
+    private static void setDateFrom(String datum, Employee employee) {
+        if (datum.equals("NULL")) {
+            employee.setDateFrom(LocalDate.now().toString());
+        } else {
+            employee.setDateFrom(datum);
+        }
+    }
+
+    private static void setDateTo(String datum, Employee employee) {
+        if (datum.equals("NULL")) {
+            employee.setDateTo(LocalDate.now().toString());
+        } else {
+            employee.setDateTo(datum);
+        }
+    }
+
+    private static Date getDate(Date dateFrom1, Date dateFrom2, boolean condition) {
+        Date start;
+        if (condition) {
+            start = dateFrom1;
+        } else {
+            start = dateFrom2;
+        }
+        return start;
     }
 }
