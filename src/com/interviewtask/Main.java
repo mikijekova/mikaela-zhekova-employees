@@ -35,15 +35,15 @@ public class Main {
                     continue;
                 }
 
-                Date dateFrom1 = format.parse(employees.get(first).getDateFrom());
-                Date dateTo1 = format.parse(employees.get(first).getDateTo());
-                Date dateFrom2 = format.parse(employees.get(second).getDateFrom());
-                Date dateTo2 = format.parse(employees.get(second).getDateTo());
+                Date dateFromFirst = format.parse(employees.get(first).getDateFrom());
+                Date dateToFirst = format.parse(employees.get(first).getDateTo());
+                Date dateFromSecond = format.parse(employees.get(second).getDateFrom());
+                Date dateToSecond = format.parse(employees.get(second).getDateTo());
 
                 //Gets the latest of dateFrom1 and dateFrom2
-                start = getDate(dateFrom1, dateFrom2, dateFrom1.compareTo(dateFrom2) > 0);
+                start = getDate(dateFromFirst, dateFromSecond, dateFromFirst.compareTo(dateFromSecond) > 0);
                 //Gets the earliest of dateTo1 and dateTo2
-                end = getDate(dateTo1, dateTo2, dateTo1.compareTo(dateTo2) < 0);
+                end = getDate(dateToFirst, dateToSecond, dateToFirst.compareTo(dateToSecond) < 0);
 
                 //Check if there is a period between the start and the end date
                 if (start.compareTo(end) < 0) {
@@ -100,13 +100,7 @@ public class Main {
         }
     }
 
-    private static Date getDate(Date dateFrom1, Date dateFrom2, boolean condition) {
-        Date start;
-        if (condition) {
-            start = dateFrom1;
-        } else {
-            start = dateFrom2;
-        }
-        return start;
+    private static Date getDate(Date dateFirst, Date dateSecond, boolean condition) {
+        return condition ? dateFirst : dateSecond;
     }
 }
