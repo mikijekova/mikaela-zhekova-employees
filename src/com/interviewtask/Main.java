@@ -8,9 +8,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class reads file from the path added to Program arguments in Main's configurations
@@ -22,9 +20,8 @@ public class Main {
         List<Employee> employees = readCSV(args[0]);
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
-        Employee firstOfTeam = new Employee();
-        Employee secondOfTeam = new Employee();
-        long maxDays = 0;
+        //Map<Set<Employee.Id>, xDays>>
+        Map<Set<Integer>, Long> mapPairAndDays = new HashMap<>();
         Date start;
         Date end;
 
@@ -34,33 +31,39 @@ public class Main {
                         (employees.get(first).getProjectId() != employees.get(second).getProjectId())) {
                     continue;
                 }
+                // Set <Employee.Id>
+                Set<Integer> pair = new HashSet<>();
+                pair.add(employees.get(first).getEmployeeId());
+                pair.add(employees.get(second).getEmployeeId());
 
                 Date dateFromFirst = format.parse(employees.get(first).getDateFrom());
                 Date dateToFirst = format.parse(employees.get(first).getDateTo());
                 Date dateFromSecond = format.parse(employees.get(second).getDateFrom());
                 Date dateToSecond = format.parse(employees.get(second).getDateTo());
 
-                //Gets the latest of dateFrom1 and dateFrom2
+                //Gets the latest of dateFrom of the first employee and dateFrom of the second employee
                 start = getDate(dateFromFirst, dateFromSecond, dateFromFirst.compareTo(dateFromSecond) > 0);
-                //Gets the earliest of dateTo1 and dateTo2
+                //Gets the earliest of dateTo of the first and dateTo ot the second
                 end = getDate(dateToFirst, dateToSecond, dateToFirst.compareTo(dateToSecond) < 0);
 
                 //Check if there is a period between the start and the end date
-                if (start.compareTo(end) < 0) {
-                    LocalDate date1 = start.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                    LocalDate date2 = end.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                    long daysBetween = ChronoUnit.DAYS.between(date1, date2);
-                    if (daysBetween > maxDays) {
-                        maxDays = daysBetween;
-                        firstOfTeam = employees.get(first);
-                        secondOfTeam = employees.get(second);
-                    }
-                }
+                fillMapIfPeriodBetween(mapPairAndDays, start, end, pair);
             }
         }
-        System.out.println("Days worked together: " + maxDays +
-                " \nEmployee1's ID: " + firstOfTeam.getEmployeeId() +
-                " \nEmployee2's ID: " + secondOfTeam.getEmployeeId() + "\n");
+
+        Set<Integer> teamToPrint = new HashSet<>();
+        long maxDaysToPrint = 0;
+        for (Map.Entry<Set<Integer>, Long> keyValue : mapPairAndDays.entrySet()) {
+            if (keyValue.getValue() > maxDaysToPrint) {
+                maxDaysToPrint = keyValue.getValue();
+                teamToPrint = keyValue.getKey();
+            }
+        }
+
+        List<Integer> list = new ArrayList<>(teamToPrint);
+        System.out.println("Days worked together: " + maxDaysToPrint +
+                " \nEmployee1's ID: " + list.get(0) + " \nEmployee2's ID: " +
+                list.get(1) + "\n");
     }
 
     private static List<Employee> readCSV(String filePath) throws IOException {
@@ -102,5 +105,19 @@ public class Main {
 
     private static Date getDate(Date dateFirst, Date dateSecond, boolean condition) {
         return condition ? dateFirst : dateSecond;
+    }
+
+    private static void fillMapIfPeriodBetween(Map<Set<Integer>, Long> mapPairAndDays, Date start, Date end, Set<Integer> pair) {
+        if (start.compareTo(end) < 0) {
+            LocalDate date1 = start.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate date2 = end.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            long daysBetween = ChronoUnit.DAYS.between(date1, date2);
+
+            if (mapPairAndDays.containsKey(pair)) {
+                mapPairAndDays.put(pair, mapPairAndDays.get(pair) + daysBetween);
+            } else {
+                mapPairAndDays.put(pair, daysBetween);
+            }
+        }
     }
 }
